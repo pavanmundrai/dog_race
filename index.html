@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keydown Event Example</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <canvas id="confetti-canvas" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.3.1"></script>
+
+    <style>
+        body {
+            margin: 0;
+        }
+
+        .race {
+            height: 200px;
+            border: dashed;
+            display: flex;
+            background: url(https://static.vecteezy.com/system/resources/thumbnails/018/878/331/small/empty-straight-road-with-marking-horizontal-highway-overhead-view-seamless-roadway-template-carriageway-element-of-city-map-vector.jpg);
+            object-fit: cover;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        #start {
+            margin-left: 1rem;
+            color: black;
+            font-size: 2rem;
+        }
+
+        #end {
+            margin-right: 1rem;
+        }
+
+        #myDialog {
+            max-width: 300px;
+            text-align: center;
+            position: fixed;
+            margin: 0 auto;
+            top: 40%;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        .dog {
+            position: absolute;
+            top: 150px;
+            left: 25px;
+        }
+
+        i {
+            font-size: 2rem;
+            margin: 0 10px;
+        }
+
+        .controls {
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4rem;
+        }
+
+        .restartdiv {
+            text-align: center;
+        }
+
+        .image {
+            width: 100px;
+        }
+
+        .image2 {
+            width: 130px;
+        }
+
+        #myDialog button {
+            margin: 10px;
+        }
+
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main">
+        <div class="title" style="text-align: center;">
+            <h2>Take the dog from start to end!!</h2>
+        </div>
+        <div class="race">
+            <div id="start"><img src="../png/start.png" class="image" alt=""></div>
+            <div id="end"><img src="../png/finish.png" class="image2" alt=""></div>
+        </div>
+        <i class="fa-solid fa-dog dog"></i>
+        <div class="controls">
+            <button data-action="leftmove" onmousedown="startMove(this)" onmouseup="stopMove(this)"
+                ontouchstart="startMove(this)" ontouchend="stopMove(this)">
+                <i class="fa-solid fa-circle-left"></i>
+            </button>
+
+            <button data-action="rightmove" onmousedown="startMove(this)" onmouseup="stopMove(this)"
+                ontouchstart="startMove(this)" ontouchend="stopMove(this)">
+                <i class="fa-solid fa-circle-right"></i>
+            </button>
+        </div>
+        <div class="restartdiv">
+            <button onclick="showDialog()">play again</button>
+        </div>
+    </div>
+    <dialog id="myDialog">
+        Do you want to play again? <br>
+        <button onclick="restartgame()">Yes</button> <button onclick="closeDialog()">No</button>
+    </dialog>
+    <div id="overlay"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.3.1"></script>
+    <script>
+        var isMoving = false;
+        var currentAction;
+
+        function startMove(button) {
+            isMoving = true;
+            currentAction = button.getAttribute("data-action");
+            performMove();
+        }
+
+        function stopMove() {
+            isMoving = false;
+        }
+
+        function performMove() {
+            if (isMoving) {
+                if (currentAction === "leftmove") {
+                    leftmove();
+                } else if (currentAction === "rightmove") {
+                    rightmove();
+                }
+                setTimeout(performMove, 100);
+            }
+        }
+        var dog = document.querySelector('.dog');
+
+        document.addEventListener('keydown', function (event) {
+            var keypressed = event.keyCode;
+            if (keypressed === 37) {
+                leftmove();
+            }
+            if (keypressed === 39) {
+                rightmove();
+            }
+        });
+
+        function leftmove() {
+            const computedStyle = window.getComputedStyle(dog);
+            const currentLeft = parseInt(computedStyle.left, 10) || 0;
+            if (currentLeft >= 30) {
+                dog.style.left = (currentLeft - 5) + 'px';
+            }
+            if (currentLeft <= 25) {
+                alert('you cannot move more left');
+            }
+        }
+
+        function rightmove() {
+            const computedStyle = window.getComputedStyle(dog);
+            const currentLeft = parseInt(computedStyle.left, 10) || 0;
+            const currentRight = parseInt(computedStyle.right, 10) || 0;
+            if (currentLeft >= 25) {
+                if (currentRight <= 25) {
+                    triggerConfetti();
+                } else {
+                    dog.style.left = (currentLeft + 5) + 'px';
+                }
+            }
+        }
+
+        const dialog = document.getElementById("myDialog");
+
+        function restartgame() {
+            location.reload();
+        }
+        var overlay = document.getElementById("overlay");
+
+        function showDialog() {
+            dialog.show();
+            overlay.style.display = 'block';
+        }
+
+        function closeDialog() {
+            dialog.close();
+            overlay.style.display = 'none';
+        }
+
+        function triggerConfetti() {
+            var end = Date.now() + 5 * 1000;
+            (function frame() {
+                confetti({
+                    particleCount: 2,
+                    spread: 360,
+                    origin: { x: Math.random(), y: Math.random() * 0.2 }
+                });
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                } else {
+                    showDialog();
+                }
+            }());
+        }
+    </script>
+
+</body>
+
+</html>
